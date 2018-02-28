@@ -1,4 +1,4 @@
-package com.egt.interactive.tasks.additional.hashmap_impl;
+package hashmap_impl;
 
 public interface PitMap<K, V> {
     
