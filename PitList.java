@@ -1,4 +1,4 @@
-package com.egt.interactive.tasks.additional.arrlist_impl;
+package arrlist_impl;
 
 public interface PitList<T> {
 
