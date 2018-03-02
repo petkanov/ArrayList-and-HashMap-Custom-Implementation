@@ -62,6 +62,9 @@ public class ArrayPitList<T> implements PitList<T> {
     @Override
     public boolean contains(final T value) {
 	for (Object o : elements) {
+	    if(value == null && value == o){
+		return true;
+	    }
 	    if (o != null && o.equals(value)) {
 		return true;
 	    }
@@ -72,6 +75,7 @@ public class ArrayPitList<T> implements PitList<T> {
     @SuppressWarnings("unchecked")
     @Override
     public T get(final int i) {
+	validateIndex(i);
 	return (T)elements[i]; 
     }
 
@@ -80,6 +84,9 @@ public class ArrayPitList<T> implements PitList<T> {
 	int itemIndex = 0;
 	
 	for(Object o : elements){ 
+	    if(o == value){ // true when both are either null or the same object
+		return itemIndex;
+	    }
 	    if(o!=null && o.equals(value)){
 		return itemIndex;
 	    }
@@ -103,23 +110,29 @@ public class ArrayPitList<T> implements PitList<T> {
 	for (int i = index; i < size-1; i++) {  
 	    elements[i] = elements[i+1];
 	}
-	size--;System.out.println("ASDASDASDAS");
+	elements[size-1] = null;
+	size--; 
 	return (T)obj;
     }
 
     @Override
-    public boolean remove(final Object value) {
-	if(value == null){
-	    return false;
-	}
-	@SuppressWarnings("unchecked")
-	T extracted = (T) value;
+    public boolean remove(Object value) {
 	
-	if (contains(extracted)) {
-	    remove( indexOf(extracted) );
-	    return true;
+	boolean isRemoved = false;
+	int index = 0;
+
+	for (Object o : elements) {
+	    if (o == null && value == o) {
+		remove(index); 
+		isRemoved = true; 
+	    }
+	    else if (value!=null && value.equals(o)) { 
+		remove(index);
+		isRemoved = true; 
+	    }
+	    index++;
 	}
-	return false;
+	return isRemoved;
     }
 
     @Override
@@ -137,7 +150,8 @@ public class ArrayPitList<T> implements PitList<T> {
     public String toString() {
 	final StringBuilder string = new StringBuilder("[");
 	for (int i = 0; i < size; i++) {
-	    string.append(elements[i].toString()+(i==size-1 ? "" : ", ") );
+	    String elm = elements[i]==null ? "null" : elements[i].toString();
+	    string.append(elm + (i==size-1 ? "" : ", ") );
 	}
 	string.append("]");
         return string.toString();
