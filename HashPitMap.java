@@ -4,13 +4,13 @@ import java.util.Arrays;
 
 public class HashPitMap<K, V> implements PitMap<K, V> {
 
-    private static final int INITIAL_VOLUME = 13;
+    private static final int SIZE = 13;
     private int size = 0;
 
     @SuppressWarnings("unchecked")
-    private Entry<K, V>[] table = new Entry[INITIAL_VOLUME];
+    private Entry<K, V>[] table = new Entry[SIZE];
 
-    public static class Entry<K, V> {
+    private static class Entry<K, V> {
 	private final K key;
 	private V value;
 	private Entry<K, V> next;
@@ -18,19 +18,7 @@ public class HashPitMap<K, V> implements PitMap<K, V> {
 	Entry(final K key, final V value) {
 	    this.key = key;
 	    this.value = value;
-	}
-
-	public K getKey() {
-	    return this.key;
-	}
-
-	public V getValue() {
-	    return this.value;
-	}
-
-	public void setValue(final V value) {
-	    this.value = value;
-	}
+	} 
 
 	@Override
 	public int hashCode() {
@@ -80,7 +68,10 @@ public class HashPitMap<K, V> implements PitMap<K, V> {
     }
 
     private int getBucketIndex(K key) {
-	return key.hashCode() % INITIAL_VOLUME;
+	if(key==null){
+	    return 0;
+	}
+	return Math.abs( key.hashCode() % SIZE);
     } 
     
     @Override
@@ -89,9 +80,13 @@ public class HashPitMap<K, V> implements PitMap<K, V> {
 	Entry<K, V> entry = table[bucketIndex];
 
 	// Check if there is an entry with the same Key already in the current bucket
-	// If it is there, then we replace the values with the new one
+	// If it is there, then we replace it's value with the new one
 	for (; entry != null; entry = entry.next) {
-	    if (entry.key.equals(key)) {
+	    if(key == entry.key){ // true if both null or the same object
+		entry.value = value;
+		return;
+	    }
+	    else if (entry.key!=null && entry.key.equals(key)) {
 		entry.value = value;
 		return;
 	    }
@@ -108,7 +103,10 @@ public class HashPitMap<K, V> implements PitMap<K, V> {
 	Entry<K,V> entry = table[ getBucketIndex(key) ];
 	
 	while(entry != null){
-	    if(entry.key.equals(key)){
+	    if(key == entry.key){
+		return entry.value;
+	    }
+	    if(entry.key != null && entry.key.equals(key)){
 		return entry.value;
 	    }
 	    entry = entry.next;
@@ -116,11 +114,10 @@ public class HashPitMap<K, V> implements PitMap<K, V> {
 	return null;
     }    
     
+    @SuppressWarnings("unchecked")
     @Override
-    public void clear() {
-	for(int i = 0; i < INITIAL_VOLUME; i++){
-	    table[i] = null;
-	}
+    public void clear() { 
+	table = new Entry[SIZE];
 	size = 0;
     }
 
@@ -139,7 +136,7 @@ public class HashPitMap<K, V> implements PitMap<K, V> {
 
     @Override
     public boolean containsValue(final V value) {
-	for(int i = 0; i < INITIAL_VOLUME; i++){
+	for(int i = 0; i < SIZE; i++){
 	    Entry<K,V> entry = table[i];
 	    while(entry != null){
 		if(entry.value.equals(value)){
@@ -161,8 +158,12 @@ public class HashPitMap<K, V> implements PitMap<K, V> {
 	final int bucketIndex = getBucketIndex(key);
 	Entry<K, V> entry = table[bucketIndex];
 
-	if(entry.key.equals(key)){
+	if(key == entry.key){
 	    table[bucketIndex] = entry.next; // Link to the next Item after deleted one
+	    size--;
+	}
+	if(entry.key!=null && entry.key.equals(key)){
+	    table[bucketIndex] = entry.next;  
 	    size--;
 	}
 	
